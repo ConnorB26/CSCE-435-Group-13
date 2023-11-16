@@ -129,6 +129,11 @@ end procedure
 #### Graph Overview
 - This graph illustrates how the execution time changes with an increasing number of threads in a block, keeping the input size constant.
 
+### Strong Scaling Analysis for OddEvenSort with CUDA
+![](./images/oddeven_cuda_strong_scaling.png)
+#### Graph Overview
+- The graph shows just random, but it shows that threads below 125 basically do not help improve performance.
+
 #### Trends
 - A sharp decrease in execution time is observed as threads increase up to around 600.
 - Beyond this point, the execution time stabilizes or slightly increases.
@@ -139,6 +144,7 @@ end procedure
 
 ### Weak Scaling Analysis for SampleSort with MPI
 ![](./sample_sort/Sample%20Sort%20Weak%20Scaling%20MPI.png)
+
 #### Graph Overview
 - Weak scaling is examined by proportionally increasing the problem size with the number of processors.
 
@@ -153,6 +159,11 @@ end procedure
 ![](./sample_sort/Sample%20Sort%20Weak%20Scaling%20CUDA.png)
 #### Graph Overview
 - Similar to MPI, this graph shows execution time against increasing problem size and number of threads in a block.
+
+### Weak Scaling Analysis for OddEvenSort with CUDA
+![](./images/oddeven_cuda_weak_scaling.png)
+#### Graph Overview
+- This shows an almost constant relationship between threads in a block and execution time. The more elements to sort, the higher the time.
 
 #### Trends
 - The execution time remains relatively constant as problem size and thread count increase, demonstrating good weak scaling.
