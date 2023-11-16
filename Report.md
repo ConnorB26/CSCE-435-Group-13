@@ -221,3 +221,30 @@ end procedure
 - The algorithm's parallel efficiency seems to decrease with scaling, likely due to communication costs or load imbalances at larger scales.
 
 Use this analysis to explore the Bitonic Sort algorithm's performance in both MPI and CUDA implementations, discussing potential reasons for the observed trends and considering improvements for efficiency.
+
+## Performance Analysis of Parallel Merge Sort
+
+### Strong Scaling Analysis for MergeSort with MPI
+![](./merge_sort/merge_mpi_strong_scaling.png)
+#### Graph Overview
+- The graph shows a drop in time as more processors are added that slows down.
+
+#### Trends
+- The graph exhibits a nearly ideal curve which spikes at the start but then continually sees better average times as more processors are added.
+
+#### Interpretation
+- The reasoning for the initial jump is due to overhead of merging the sorted graphs which earlier on means that larger arrays are being merged since there are less processes.
+
+### Weak Scaling Analysis for MergeSort with MPI
+![](./merge_sort/merge_mpi_weak_scaling.png)
+#### Graph Overview
+- Weak scaling is examined by proportionally increasing the problem size with the number of processors.
+
+#### Trends
+- The graph shows similar trends to strong scaling with MPI
+- Each line shows expected results with smaller elements per processor showing lower average times
+
+#### Interpretation
+- The grapg shows similar trends to strong scaling for the same reason previously stated
+
+
