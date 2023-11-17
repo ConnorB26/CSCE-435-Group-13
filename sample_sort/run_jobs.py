@@ -8,7 +8,7 @@ input_types = ["s", "r", "rs", "p"]
 input_sizes = [16, 18, 20, 22, 24, 26, 28]
 mpi_procs = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
 cuda_threads = [64, 128, 256, 512, 1024]
-procs_per_node = 64
+procs_per_node = 32
 
 # Ensure the Caliper output directory exists
 subprocess.call(["mkdir", "-p", cali_dir])

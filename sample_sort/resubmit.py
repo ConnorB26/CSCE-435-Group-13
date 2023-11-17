@@ -7,7 +7,7 @@ input_sizes = [16, 18, 20, 22, 24, 26, 28]
 mpi_procs = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
 cuda_threads = [64, 128, 256, 512, 1024]
 cali_dir = "./cali"
-procs_per_node = 64
+procs_per_node = 32
 
 mpi_job_script = "./mpi/mpi.grace_job"
 cuda_job_script = "./cuda/cuda.grace_job"
