@@ -155,11 +155,6 @@ end procedure
 #### Interpretation
 - The increase in execution time may indicate significant communication overhead or imbalanced work distribution among processors.
 
-### Weak Scaling Analysis for SampleSort with CUDA
-![](./sample_sort/Sample%20Sort%20Weak%20Scaling%20CUDA.png)
-#### Graph Overview
-- Similar to MPI, this graph shows execution time against increasing problem size and number of threads in a block.
-
 ### Weak Scaling Analysis for OddEvenSort with CUDA
 ![](./images/oddeven_cuda_weak_scaling.png)
 #### Graph Overview
