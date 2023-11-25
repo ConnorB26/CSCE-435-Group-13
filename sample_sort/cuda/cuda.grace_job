@@ -34,4 +34,4 @@ mkdir -p ${output_dir}
 
 CALI_CONFIG="spot(output=${output_dir}/sample-cuda-t${threads}-v${size}-i${input_type}.cali, \
     time.variance)" \
-./sample_sort_cuda $size $threads $input_type
+./cuda/sample_sort_cuda $size $threads $input_type

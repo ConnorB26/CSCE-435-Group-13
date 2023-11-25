@@ -28,4 +28,4 @@ mkdir -p ${output_dir}
 
 CALI_CONFIG="spot(output=${output_dir}/sample-mpi-p${processes}-a${size}-i${input_type}.cali, \
     time.variance, topdown.toplevel)" \
-mpirun -np $processes ./sample_sort_mpi $size $input_type
+mpirun -np $processes ./mpi/sample_sort_mpi $size $input_type

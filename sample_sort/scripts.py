@@ -21,18 +21,27 @@ def is_missing_or_empty(filename):
 def get_filename(job_type, size, parameter, input_type):
     return os.path.join(
         cali_dir,
-        "sample-{}-{}{}-i{}.cali".format(job_type, parameter, size, input_type),
+        "sample-{}-{}{}-{}{}-i{}.cali".format(
+            job_type,
+            "p" if job_type == "mpi" else "t",
+            parameter,
+            "a" if job_type == "mpi" else "v",
+            size,
+            input_type,
+        ),
     )
 
 
 def submit_job(job_type, size, parameter, input_type):
+    memory = (size.bit_length() - 1) // 2
+    # memory = 8
     if job_type == "mpi":
         nodes = (
             1
             if parameter <= procs_per_node
             else (parameter + procs_per_node - 1) // procs_per_node
         )
-        memory = (size.bit_length() - 1) // 2
+
         script = (
             mpi_single_job_script if parameter <= procs_per_node else mpi_job_script
         )
@@ -47,7 +56,6 @@ def submit_job(job_type, size, parameter, input_type):
             cali_dir,
         ]
     else:
-        memory = (size.bit_length() - 1) // 2
         command = [
             "sbatch",
             "--mem={}G".format(memory),
@@ -57,6 +65,7 @@ def submit_job(job_type, size, parameter, input_type):
             input_type,
             cali_dir,
         ]
+    # print(command)
     subprocess.call(command)
 
 
