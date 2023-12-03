@@ -99,9 +99,12 @@ __global__ void selectSamplesKernel(int *d_data, int *d_samples, size_t group_si
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < blocks)
     {
+        size_t interval = group_size / samples_per_group;
+
         for (size_t j = 0; j < samples_per_group; ++j)
         {
-            size_t sample_idx = idx * group_size + j * (group_size / samples_per_group);
+            size_t sample_idx = idx * group_size + j * interval;
+            sample_idx = min(sample_idx, idx * group_size + group_size - 1);
             d_samples[idx * samples_per_group + j] = d_data[sample_idx];
         }
     }
@@ -143,7 +146,7 @@ void sample_sort(int *h_data, size_t size)
     CALI_MARK_END("comm_large");
     CALI_MARK_END("comm");
 
-    // 1. Split data into groups and sort each group
+    // Split data into groups and sort each group
     CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("comp_large");
     size_t group_size = size / BLOCKS;
@@ -155,16 +158,19 @@ void sample_sort(int *h_data, size_t size)
     }
     CALI_MARK_END("comp_large");
 
-    // 2. Select samples and sort them
+    // Select samples and sort them
     CALI_MARK_BEGIN("comp_small");
-    size_t samples_per_group = static_cast<int>(size / sqrt(static_cast<double>(size)));
-    thrust::device_vector<int> d_samples(BLOCKS * samples_per_group);
+    const size_t min_samples_per_group = 10;
+    const size_t max_samples_per_group = 1000;
+    size_t samples_per_group = std::min(std::max(static_cast<size_t>(log2(static_cast<double>(group_size))), min_samples_per_group), max_samples_per_group);
+    size_t total_samples = BLOCKS * samples_per_group;
+    thrust::device_vector<int> d_samples(total_samples);
     selectSamplesKernel<<<BLOCKS, THREADS>>>(thrust::raw_pointer_cast(&d_data[0]), thrust::raw_pointer_cast(&d_samples[0]), group_size, samples_per_group, BLOCKS);
     cudaDeviceSynchronize();
     thrust::sort(thrust::device, d_samples.begin(), d_samples.end());
     CALI_MARK_END("comp_small");
 
-    // 3. Determine splitters from sorted samples
+    // Determine splitters from sorted samples
     int num_buckets = BLOCKS;
     int num_splitters = num_buckets - 1;
     thrust::device_vector<int> d_splitters(num_splitters);
@@ -176,36 +182,50 @@ void sample_sort(int *h_data, size_t size)
     }
     CALI_MARK_END("comp_small");
 
-    // 4. Assign elements to buckets
+    // Assign elements to buckets
     CALI_MARK_BEGIN("comp_large");
     thrust::device_vector<int> d_bucket_ids(size);
     assignToBucketsKernel<<<(size + THREADS - 1) / THREADS, THREADS>>>(thrust::raw_pointer_cast(&d_data[0]), thrust::raw_pointer_cast(&d_bucket_ids[0]), thrust::raw_pointer_cast(&d_splitters[0]), num_splitters, size);
     cudaDeviceSynchronize();
     CALI_MARK_END("comp_large");
 
-    std::vector<thrust::device_vector<int>> buckets(num_buckets);
+    // Create a single vector for all buckets
+    thrust::device_vector<int> all_buckets(size);
+    thrust::device_vector<int> bucket_sizes(num_buckets, 0);
 
-    // Distribute elements into buckets
-    CALI_MARK_BEGIN("comp_large");
-    for (size_t idx = 0; idx < size; ++idx)
+    // Calculate the size of each bucket
+    for (int i = 0; i < size; ++i)
     {
-        int bucket_id = d_bucket_ids[idx];
-        buckets[bucket_id].push_back(d_data[idx]);
+        int bucket_id = d_bucket_ids[i];
+        bucket_sizes[bucket_id]++;
+    }
+
+    // Compute exclusive prefix sum to determine starting indices of buckets
+    CALI_MARK_BEGIN("comp_small");
+    thrust::device_vector<int> bucket_starts(num_buckets);
+    thrust::exclusive_scan(bucket_sizes.begin(), bucket_sizes.end(), bucket_starts.begin());
+    CALI_MARK_END("comp_small");
+
+    // Scatter the elements into their respective buckets
+    CALI_MARK_BEGIN("comp_large");
+    for (int i = 0; i < size; ++i)
+    {
+        int bucket_id = d_bucket_ids[i];
+        int pos = bucket_starts[bucket_id]++;
+        all_buckets[pos] = d_data[i];
     }
     CALI_MARK_END("comp_large");
 
-    // 5. Sort within each bucket
+    // Sort each bucket
     CALI_MARK_BEGIN("comp_large");
-    for (auto &bucket : buckets)
+    for (int i = 0; i < num_buckets; ++i)
     {
-        thrust::sort(thrust::device, bucket.begin(), bucket.end());
-    }
-
-    // Flatten buckets into d_data
-    auto d_data_itr = d_data.begin();
-    for (auto &bucket : buckets)
-    {
-        d_data_itr = thrust::copy(bucket.begin(), bucket.end(), d_data_itr);
+        int start_idx = (i == 0) ? 0 : bucket_starts[i - 1];
+        int bucket_size = bucket_sizes[i];
+        if (bucket_size > 0)
+        {
+            thrust::sort(thrust::device, all_buckets.begin() + start_idx, all_buckets.begin() + start_idx + bucket_size);
+        }
     }
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
@@ -213,7 +233,7 @@ void sample_sort(int *h_data, size_t size)
     // Copy sorted data back to host
     CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");
-    thrust::copy(d_data.begin(), d_data.end(), h_data);
+    thrust::copy(all_buckets.begin(), all_buckets.end(), h_data);
     CALI_MARK_END("comm_large");
     CALI_MARK_END("comm");
 }
