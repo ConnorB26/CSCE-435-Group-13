@@ -33,9 +33,8 @@ def get_filename(job_type, size, parameter, input_type):
 
 
 def submit_job(job_type, size, parameter, input_type):
-    memory = (size.bit_length() - 1) // 2
-    # memory = 8
     if job_type == "mpi":
+        memory = (size.bit_length() - 1) // 2
         nodes = (
             1
             if parameter <= procs_per_node
@@ -56,6 +55,7 @@ def submit_job(job_type, size, parameter, input_type):
             cali_dir,
         ]
     else:
+        memory = 8
         command = [
             "sbatch",
             "--mem={}G".format(memory),

@@ -94,18 +94,32 @@ bool is_correct(const std::vector<int> &data)
     return true;
 }
 
-__global__ void selectSamplesKernel(int *d_data, int *d_samples, size_t group_size, size_t samples_per_group, int blocks)
+__global__ void selectSamplesKernel(int *d_data, int *d_samples, size_t data_size, size_t group_size, size_t samples_per_group, int blocks)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < blocks)
     {
-        size_t interval = group_size / samples_per_group;
+        size_t interval = max(group_size / samples_per_group, 1ul);
 
         for (size_t j = 0; j < samples_per_group; ++j)
         {
             size_t sample_idx = idx * group_size + j * interval;
+
+            // Ensure sample index does not exceed the bounds of the data array
+            if (sample_idx >= data_size)
+            {
+                break;
+            }
+
+            // Clamp the sample index to the last element of the current group if necessary
             sample_idx = min(sample_idx, idx * group_size + group_size - 1);
-            d_samples[idx * samples_per_group + j] = d_data[sample_idx];
+
+            // Ensure the sample index for storing into d_samples is also valid
+            size_t sample_store_idx = idx * samples_per_group + j;
+            if (sample_store_idx < blocks * samples_per_group)
+            {
+                d_samples[sample_store_idx] = d_data[sample_idx];
+            }
         }
     }
 }
@@ -160,12 +174,12 @@ void sample_sort(int *h_data, size_t size)
 
     // Select samples and sort them
     CALI_MARK_BEGIN("comp_small");
-    const size_t min_samples_per_group = 10;
-    const size_t max_samples_per_group = 1000;
+    const size_t min_samples_per_group = 4;
+    const size_t max_samples_per_group = 1024;
     size_t samples_per_group = std::min(std::max(static_cast<size_t>(log2(static_cast<double>(group_size))), min_samples_per_group), max_samples_per_group);
     size_t total_samples = BLOCKS * samples_per_group;
     thrust::device_vector<int> d_samples(total_samples);
-    selectSamplesKernel<<<BLOCKS, THREADS>>>(thrust::raw_pointer_cast(&d_data[0]), thrust::raw_pointer_cast(&d_samples[0]), group_size, samples_per_group, BLOCKS);
+    selectSamplesKernel<<<BLOCKS, THREADS>>>(thrust::raw_pointer_cast(&d_data[0]), thrust::raw_pointer_cast(&d_samples[0]), size, group_size, samples_per_group, BLOCKS);
     cudaDeviceSynchronize();
     thrust::sort(thrust::device, d_samples.begin(), d_samples.end());
     CALI_MARK_END("comp_small");
