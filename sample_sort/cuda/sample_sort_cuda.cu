@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <random>
+#include <cmath>
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
 #include <adiak.hpp>
@@ -12,14 +13,8 @@
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
 #include <thrust/sort.h>
-#include <thrust/sequence.h>
 #include <thrust/execution_policy.h>
-#include <thrust/count.h>
-#include <thrust/transform.h>
-#include <thrust/gather.h>
-#include <thrust/scatter.h>
-#include <thrust/iterator/counting_iterator.h>
-#include <cmath>
+#include <thrust/scan.h>
 
 // Global variables
 int THREADS;
@@ -124,7 +119,7 @@ __global__ void selectSamplesKernel(int *d_data, int *d_samples, size_t data_siz
     }
 }
 
-__global__ void assignToBucketsKernel(int *d_data, int *d_buckets, int *d_splitters, int num_splitters, size_t size)
+__global__ void assignToBucketsAndCountKernel(int *d_data, int *d_buckets, int *d_bucket_counts, int *d_splitters, int num_splitters, size_t size)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size)
@@ -145,6 +140,19 @@ __global__ void assignToBucketsKernel(int *d_data, int *d_buckets, int *d_splitt
         }
 
         d_buckets[idx] = bucket_id;
+        atomicAdd(&d_bucket_counts[bucket_id], 1);
+    }
+}
+
+__global__ void scatterToCorrectBuckets(int *d_data, int *d_bucket_ids, int *d_bucket_starts, int *d_bucket_sizes, int *d_output, size_t size)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < size)
+    {
+        int bucket_id = d_bucket_ids[idx];
+        int start_idx = d_bucket_starts[bucket_id];
+        int pos = atomicAdd(&d_bucket_sizes[bucket_id], 1);
+        d_output[start_idx + pos] = d_data[idx];
     }
 }
 
@@ -199,47 +207,43 @@ void sample_sort(int *h_data, size_t size)
     // Assign elements to buckets
     CALI_MARK_BEGIN("comp_large");
     thrust::device_vector<int> d_bucket_ids(size);
-    assignToBucketsKernel<<<(size + THREADS - 1) / THREADS, THREADS>>>(thrust::raw_pointer_cast(&d_data[0]), thrust::raw_pointer_cast(&d_bucket_ids[0]), thrust::raw_pointer_cast(&d_splitters[0]), num_splitters, size);
+    thrust::device_vector<int> d_bucket_counts(num_buckets, 0);
+    assignToBucketsAndCountKernel<<<BLOCKS, THREADS>>>(thrust::raw_pointer_cast(&d_data[0]),
+                                                       thrust::raw_pointer_cast(&d_bucket_ids[0]),
+                                                       thrust::raw_pointer_cast(&d_bucket_counts[0]),
+                                                       thrust::raw_pointer_cast(&d_splitters[0]),
+                                                       num_splitters,
+                                                       size);
     cudaDeviceSynchronize();
     CALI_MARK_END("comp_large");
 
-    // Create a single vector for all buckets
-    thrust::device_vector<int> all_buckets(size);
-    thrust::device_vector<int> bucket_sizes(num_buckets, 0);
-
-    // Calculate the size of each bucket
-    for (int i = 0; i < size; ++i)
-    {
-        int bucket_id = d_bucket_ids[i];
-        bucket_sizes[bucket_id]++;
-    }
-
-    // Compute exclusive prefix sum to determine starting indices of buckets
-    CALI_MARK_BEGIN("comp_small");
-    thrust::device_vector<int> bucket_starts(num_buckets);
-    thrust::exclusive_scan(bucket_sizes.begin(), bucket_sizes.end(), bucket_starts.begin());
-    CALI_MARK_END("comp_small");
-
-    // Scatter the elements into their respective buckets
+    // Compute bucket starting indices
     CALI_MARK_BEGIN("comp_large");
-    for (int i = 0; i < size; ++i)
-    {
-        int bucket_id = d_bucket_ids[i];
-        int pos = bucket_starts[bucket_id]++;
-        all_buckets[pos] = d_data[i];
-    }
+    thrust::device_vector<int> all_buckets(size);
+    thrust::device_vector<int> d_bucket_starts(num_buckets);
+    thrust::exclusive_scan(d_bucket_counts.begin(), d_bucket_counts.end(), d_bucket_starts.begin());
+    cudaDeviceSynchronize();
+
+    // Scatter elements
+    thrust::device_vector<int> d_bucket_sizes(num_buckets, 0);
+    scatterToCorrectBuckets<<<(size + THREADS - 1) / THREADS, THREADS>>>(
+        thrust::raw_pointer_cast(d_data.data()),
+        thrust::raw_pointer_cast(d_bucket_ids.data()),
+        thrust::raw_pointer_cast(d_bucket_starts.data()),
+        thrust::raw_pointer_cast(d_bucket_sizes.data()),
+        thrust::raw_pointer_cast(all_buckets.data()),
+        size);
+    cudaDeviceSynchronize();
     CALI_MARK_END("comp_large");
 
     // Sort each bucket
     CALI_MARK_BEGIN("comp_large");
     for (int i = 0; i < num_buckets; ++i)
     {
-        int start_idx = (i == 0) ? 0 : bucket_starts[i - 1];
-        int bucket_size = bucket_sizes[i];
-        if (bucket_size > 0)
-        {
-            thrust::sort(thrust::device, all_buckets.begin() + start_idx, all_buckets.begin() + start_idx + bucket_size);
-        }
+        int start_idx = d_bucket_starts[i];
+        int bucket_size = d_bucket_sizes[i];
+        int end_idx = start_idx + bucket_size;
+        thrust::sort(thrust::device, all_buckets.begin() + start_idx, all_buckets.begin() + end_idx);
     }
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
