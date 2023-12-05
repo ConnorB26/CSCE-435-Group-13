@@ -111,36 +111,140 @@ end procedure
 
 ## Performance Analysis of Parallel Sample Sort
 
-### Strong Scaling Analysis for SampleSort with MPI
-![](./sample_sort/Sample%20Sort%20Strong%20Scaling%20MPI.png)
+### Strong Scaling Analysis for Sample Sort (main)
+![](./plots/Sample/Sample_strong_scaling_CUDA_main_65536.png)
+![](./plots/Sample/Sample_strong_scaling_MPI_main_65536.png)
 #### Graph Overview
-- The strong scaling graph for MPI displays the average execution time as the number of processors increases, with a fixed input size (626144).
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the main region's average time taken to sort 2^16 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processes (MPI).
 
 #### Trends
-- Ideally, the execution time should decrease as the number of processors increases.
-- The execution time for sorted, 1% perturbed, and random inputs decreases with more processors, indicating good scaling.
-- The reverse sorted input does not show a significant decrease in execution time, suggesting challenges in parallelization.
+For the CUDA implementation, all of the input types decrease in execution time as the number of threads is increased.
+
+For the MPI implementation, all of the input types increase in execution time as the number of processes is increased.
 
 #### Interpretation
-- The algorithm scales well with an increasing number of processors up to a point, after which the scaling benefits reduce, likely due to communication overhead or synchronization issues.
+The practically linear decrease in execution time for CUDA indicates an overall excellent use of the increased parallelism accessible.
 
-### Strong Scaling Analysis for SampleSort with CUDA
-![](./sample_sort/Sample%20Sort%20Strong%20Scaling%20CUDA.png)
+The increase in execution time for MPI shows that even as the parallelism is increased, the overall execution time is slower and can't take full advantage of the accessible parallelism.
+
+### Strong Scaling Analysis for Sample Sort (comp_large)
+![](./plots/Sample/Sample_strong_scaling_CUDA_comp_large_65536.png)
+![](./plots/Sample/Sample_strong_scaling_MPI_comp_large_65536.png)
 #### Graph Overview
-- This graph illustrates how the execution time changes with an increasing number of threads in a block, keeping the input size constant.
-
-### Weak Scaling Analysis for SampleSort with MPI
-![](./sample_sort/Sample%20Sort%20Weak%20Scaling%20MPI.png)
-
-#### Graph Overview
-- Weak scaling is examined by proportionally increasing the problem size with the number of processors.
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the comp_large region's average time taken to sort 2^16 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processes (MPI).
 
 #### Trends
-- Ideally, execution time should remain constant with increases in problem size and processor count.
-- The execution time increases with more processors and larger problem sizes, which deviates from the ideal.
+For both implementations, all of the input types decrease in execution time as the number of threads or processes is increased.
 
 #### Interpretation
-- The increase in execution time may indicate significant communication overhead or imbalanced work distribution among processors.
+The decrease in execution time for both MPI and CUDA suggest that they can both take advantage of the increase parallelism to perform the operations necessary for the algorithm by splitting up the dataset into smaller groups.
+
+### Strong Scaling Analysis for Sample Sort (comm)
+![](./plots/Sample/Sample_strong_scaling_CUDA_comm_65536.png)
+![](./plots/Sample/Sample_strong_scaling_MPI_comm_65536.png)
+#### Graph Overview
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the comm region's average time taken to sort 2^16 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+For the CUDA implementation, all of the input types stay pretty much the same for the varied number of threads used.
+
+For the MPI implementation, all of the input types increase in execution time as the number of processes is increased.
+
+#### Interpretation
+The CUDA graph suggests that for communication, the increased parallelism doesn't affect the time at all, since the lines are pretty horizontal and only change by about a hundredth of a second. This is because the only communication operation used by the CUDA code is just to copy the array of numbers to the GPU and then back, so for a constant array size (2^16 here), that time doesn't change with the increased parallelism.
+
+The MPI graph however suggests that the communication is the biggest portion of the overall execution time of this implementation as it increases with the number of processes. This is because the MPI code requires more communication between the processes since there's a lot of synchronization steps necessary for this algorithm, so as the amount of processes is increased, it takes longer to communicate relevant data between them.
+
+### Weak Scaling Analysis for Sample Sort (main)
+![](./plots/Sample/Sample_weak_scaling_CUDA_main_Random.png)
+![](./plots/Sample/Sample_weak_scaling_MPI_main_Random.png)
+#### Graph Overview
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the main region's average time taken to sort various input sizes of random input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+For the CUDA implementation, all of the input sizes decrease in execution time as the number of threads is increased.
+
+For the MPI implementation, the smaller input sizes increase in execution times as the number of processors is increased, and the bigger input sizes decrease and then stagnate.
+
+#### Interpretation
+Since this is weak scaling, for CUDA, the decrease actually means the algorithm is taking better advantage of the increased parallelism than expected.
+
+For MPI, the increase for the smaller sizes indicate that the parallelism overheads outweigh the benefits of the increased number of processes, whereas the bigger input sizes can properly take advantage of it.
+
+### Weak Scaling Analysis for Sample Sort (comp_large)
+![](./plots/Sample/Sample_weak_scaling_CUDA_comp_large_Random.png)
+![](./plots/Sample/Sample_weak_scaling_MPI_comp_large_Random.png)
+#### Graph Overview
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the comp_large region's average time taken to sort various input sizes of random input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+For both implementations, all of the input sizes decrease in execution time as the number of threads or processes is increased.
+
+#### Interpretation
+This trend suggests that the increased parallelism is extremely beneficial for the big computational tasks, especially for MPI (steeper slope downwards).
+
+### Weak Scaling Analysis for Sample Sort (comm)
+![](./plots/Sample/Sample_weak_scaling_CUDA_comm_Random.png)
+![](./plots/Sample/Sample_weak_scaling_MPI_comm_Random.png)
+#### Graph Overview
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the comm region's average time taken to sort various input sizes of random input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+For the CUDA implementation, all of the input sizes stay pretty much the same for the varied number of threads used.
+
+For the MPI implementation, all of the input types increase in execution time as the number of processes is increased, with the smaller input sizes increasing more steeply.
+
+#### Interpretation
+For CUDA, communication only consists of copying the data to the GPU and back, so the increased parallelism has no effect on this. In addition, this is why the input sizes go in order from bottom to top because the smaller the input size, the less data there is to copy and thus faster.
+
+For MPI, the increase for all input sizes suggests that the numerous communications introduce a significant overhead, overriding any possible decrease from the computations. For the smaller input sizes, this overhead is felt more as there's less data transmitted but similar overhead.
+
+### Strong Scaling Speedup Analysis for Sample Sort (main)
+![](./plots/Sample/Sample_strong_scaling_speedup_CUDA_main_Random.png)
+![](./plots/Sample/Sample_strong_scaling_speedup_MPI_main_Random.png)
+#### Graph Overview
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the main region's speedup for sorting various input sizes of random input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+For the CUDA implementation, all input sizes increase in the amount of speedup they provide as the number of threads is increased.
+
+For the MPI implementation, all input sizes initially increased with the number of processes, but the smaller the input size, the quicker (fewer number of processes) it starts to decrease again.
+
+#### Interpretation
+The speedup for CUDA suggests it is a very efficient parallel algorithm, capable of reaching up to 10 times speedup for the biggest input sizes and 2^10 threads.
+
+The speedup for MPI is a bit more complicated, indicating a not so very efficient parallel approach, with smaller input sizes actually getting slower with more processes. The only way to actually speed up is to use bigger input sizes to make the overhead of using more processes worth it.
+
+### Strong Scaling Speedup  Analysis for Sample Sort (comp_large)
+![](./plots/Sample/Sample_strong_scaling_speedup_CUDA_comp_large_Random.png)
+![](./plots/Sample/Sample_strong_scaling_speedup_MPI_comp_large_Random.png)
+#### Graph Overview
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the comp_large region's speedup for sorting various input sizes of random input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+For both implementations, all of the input sizes increase in how much they speedup as the number of threads or processes is increased.
+
+#### Interpretation
+This trend suggests that the increased parallelism is extremely beneficial for the big computational tasks, resulting in about a 10 times speedup for CUDA's biggest input sizes, but an insane 400 times increase for MPI's biggest input sizes. This means that MPI is actually better at scaling/speeding up for computational tasks.
+
+### Strong Scaling Speedup Analysis for Sample Sort (comm)
+![](./plots/Sample/Sample_strong_scaling_speedup_CUDA_comm_Random.png)
+![](./plots/Sample/Sample_strong_scaling_speedup_MPI_comm_Random.png)
+#### Graph Overview
+These graphs represent the MPI and CUDA implementation for Sample Sort and the measure the comm region's speedup for sorting various input sizes of random input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+For the CUDA implementation, all of the input sizes stay at around the 1.0 speedup mark, with the 2^20 input size being an outlier.
+
+For the MPI implementation, all of the input sizes decreased with the number of processes used.
+
+#### Interpretation
+As mentioned previously, for the CUDA implementation, there isn't much in the communication region so the increased parallelism has no effect on increasing the speed.
+
+Similarly, as before for the MPI implementation, the communication actually gets slower with more processes as a result of the amount of messages sent and the overhead associated with them, with the bigger input sizes able to cancel out some of that communication overhead with faster computation times.
+
+
+
 
 ## Performance Analysis of Parallel Bitonic Sort
 
@@ -192,6 +296,9 @@ end procedure
 - The algorithm's parallel efficiency seems to decrease with scaling, likely due to communication costs or load imbalances at larger scales.
 
 Use this analysis to explore the Bitonic Sort algorithm's performance in both MPI and CUDA implementations, discussing potential reasons for the observed trends and considering improvements for efficiency.
+
+
+
 
 ## Performance Analysis of Parallel Merge Sort
 
@@ -292,7 +399,6 @@ For MPI, all input types increase in average time as processors increase.
 #### Interpretation
 Parallelization for CUDA has no effect significant impact past 2^8 threads, and for MPI it seems to have a negative impact, likely due to the communication overhead. 
 
-
 ### Strong Scaling Analysis for Odd-Even Sort (comp_large)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_CUDA_comp_large_16777216.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_MPI_comp_large_16777216.png)
@@ -377,7 +483,7 @@ For MPI, speedup generally decreases as processors increase.
 #### Interpretation
 Parallelization seems to hurt MPI overall, while for CUDA it is beneficial up until threads of size 2^9.
 
-### Strong Scaling Speedup  Analysis for Odd-Even Sort (comp_large)
+### Strong Scaling Speedup Analysis for Odd-Even Sort (comp_large)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_CUDA_comp_large_Sorted.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_MPI_comp_large_Sorted.png)
 #### Graph Overview
@@ -404,6 +510,9 @@ For MPI, speedup slows down as number of processors increase for all input sizes
 
 #### Interpretation
 It is clear that communication is the limiting factor for MPI, due to the more occurences of MPI_Sendrecv as processors increase. For CUDA, communication does not have much of an impact.
+
+
+
 
 ## Algorithm Comparisons
 
