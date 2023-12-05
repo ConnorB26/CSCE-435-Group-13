@@ -129,19 +129,6 @@ end procedure
 #### Graph Overview
 - This graph illustrates how the execution time changes with an increasing number of threads in a block, keeping the input size constant.
 
-### Strong Scaling Analysis for OddEvenSort with CUDA
-![](./images/oddeven_cuda_strong_scaling.png)
-#### Graph Overview
-- The graph shows just random, but it shows that threads below 125 basically do not help improve performance. Ignore the title.
-
-#### Trends
-- A sharp decrease in execution time is observed as threads increase up to around 600.
-- Beyond this point, the execution time stabilizes or slightly increases.
-
-#### Interpretation
-- Initially, increased thread count leads to better GPU resource utilization.
-- After reaching a threshold, managing more threads adds overhead, and the execution time does not improve, indicating an optimal thread count range for efficiency.
-
 ### Weak Scaling Analysis for SampleSort with MPI
 ![](./sample_sort/Sample%20Sort%20Weak%20Scaling%20MPI.png)
 
@@ -154,17 +141,6 @@ end procedure
 
 #### Interpretation
 - The increase in execution time may indicate significant communication overhead or imbalanced work distribution among processors.
-
-### Weak Scaling Analysis for OddEvenSort with CUDA
-![](./images/oddeven_cuda_weak_scaling.png)
-#### Graph Overview
-- This shows an almost constant relationship between threads in a block and execution time. The more elements to sort, the higher the time. Ignore the title.
-
-#### Trends
-- The execution time remains relatively constant as problem size and thread count increase, demonstrating good weak scaling.
-
-#### Interpretation
-- Consistent execution times across different thread counts suggest that the GPU implementation is efficiently parallelized, handling larger problem sizes effectively without a significant rise in execution time.
 
 ## Performance Analysis of Parallel Bitonic Sort
 
@@ -300,6 +276,120 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 
+## Performance Analysis of Parallel Odd-Even Transposition Sort
+
+### Strong Scaling Analysis for Odd-Even Sort (main)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_CUDA_main_16777216.png)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_MPI_main_16777216.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Strong Scaling Analysis for Odd-Even Sort (comp_large)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_CUDA_comp_large_16777216.png)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_MPI_comp_large_16777216.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Strong Scaling Analysis for Odd-Even Sort (comm)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_CUDA_comm_16777216.png)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_MPI_comm_16777216.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Weak Scaling Analysis for Odd-Even Sort (main)
+![](./plots/Odd-Even/Odd-Even_weak_scaling_CUDA_main_Sorted.png)
+![](./plots/Odd-Even/Odd-Even_weak_scaling_MPI_main_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Weak Scaling Analysis for Odd-Even Sort (comp_large)
+![](./plots/Odd-Even/Odd-Even_weak_scaling_CUDA_comp_large_Sorted.png)
+![](./plots/Odd-Even/Odd-Even_weak_scaling_MPI_comp_large_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Weak Scaling Analysis for Odd-Even Sort (comm)
+![](./plots/Odd-Even/Odd-Even_weak_scaling_CUDA_comm_Sorted.png)
+![](./plots/Odd-Even/Odd-Even_weak_scaling_MPI_comm_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Strong Scaling Speedup Analysis for Odd-Even Sort (main)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_CUDA_main_Sorted.png)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_MPI_main_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Strong Scaling Speedup  Analysis for Odd-Even Sort (comp_large)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_CUDA_comp_large_Sorted.png)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_MPI_comp_large_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Strong Scaling Speedup Analysis for Odd-Even Sort (comm)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_CUDA_comm_Sorted.png)
+![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_MPI_comm_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+## Algorithm Comparisons
+
+### main
+![](plots/comparative_strong_scaling_65536_MPI_main_Random.png)
+![](plots/comparative_strong_scaling_65536_CUDA_main_Random.png)
+
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### comm
+![](plots/comparative_strong_scaling_65536_MPI_comm_Random.png)
+![](plots/comparative_strong_scaling_65536_CUDA_comm_Random.png)
+
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### comp_large
+![](plots/comparative_strong_scaling_65536_MPI_comp_large_Random.png)
+![](plots/comparative_strong_scaling_65536_CUDA_comp_large_Random.png)
+
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
 
 ## Plots
 ![](plots/comparative_strong_scaling_65536_CUDA_main_Random.png)
