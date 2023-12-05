@@ -282,82 +282,128 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_CUDA_main_16777216.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_MPI_main_16777216.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the main region's average time taken to sort 2^24 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, the average time decreases from 2^6 sharply for all input types as threads increase, and decreases for all types except reverse sorted from 2^7 to 2^8. After 2^8, average time stays relatively the same.
+
+For MPI, all input types increase in average time as processors increase.
 
 #### Interpretation
+Parallelization for CUDA has no effect significant impact past 2^8 threads, and for MPI it seems to have a negative impact, likely due to the communication overhead. 
+
 
 ### Strong Scaling Analysis for Odd-Even Sort (comp_large)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_CUDA_comp_large_16777216.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_MPI_comp_large_16777216.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the comp_large region's average time taken to sort 2^24 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, comp_large is similar to main, the average time decreases from 2^6 sharply for all input types as threads increase, and decreases for all types except reverse sorted from 2^7 to 2^8. After 2^8, average time stays relatively the same.
+
+For MPI, average execution time stays relatively the same up to 2^6 processors, where it then significantly decreases up to 2^10 processors for all input types.
 
 #### Interpretation
+Parallelization for CUDA has no effect significant impact past 2^8 threads, likely due to poor implementation, and for MPI computation is improved significantly by increasing processors, so it parallelizes well.
 
 ### Strong Scaling Analysis for Odd-Even Sort (comm)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_CUDA_comm_16777216.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_MPI_comm_16777216.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the comm region's average time taken to sort 2^24 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, comm seems to be quite sporadic for all input types, with the least sporadic being 1% pertubed. However, there is an overall downward trend in execution time as threads increase for all input types.
+
+For MPI, comm resembles main in that execution time has a steady increase as number of processors increase.
 
 #### Interpretation
+These trends make sense as MPI has a lot of communication overhead, which can hurt its parallelization.
 
 ### Weak Scaling Analysis for Odd-Even Sort (main)
 ![](./plots/Odd-Even/Odd-Even_weak_scaling_CUDA_main_Sorted.png)
 ![](./plots/Odd-Even/Odd-Even_weak_scaling_MPI_main_Sorted.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the main region's average time taken to sort various input sizes of sorted input type for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, average execution time stays relatively the same for all input sizes as threads increase. The higher the input size, the longer the execution time.
+
+For MPI, the higher the input size, the less of an impact is had as the number of processors increase, but generally as processors increase execution time does as well.
 
 #### Interpretation
+Evidently, CUDA is not parallelizing well. For MPI, for this input type, there is no benefit to parallelization and it hurts the execution time to use it.
 
 ### Weak Scaling Analysis for Odd-Even Sort (comp_large)
 ![](./plots/Odd-Even/Odd-Even_weak_scaling_CUDA_comp_large_Sorted.png)
 ![](./plots/Odd-Even/Odd-Even_weak_scaling_MPI_comp_large_Sorted.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the comp_large region's average time taken to sort various input sizes of sorted input type for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For Cuda, comp_large is similar to main here.
+
+For MPI, comp_large generally decreases as number of processors increases.
 
 #### Interpretation
+Computation is the limiting factor for CUDA and is the benefiting factor for MPI due to parallelization. However, for MPI it is not significant enough to make up for the negatives from communication.
 
 ### Weak Scaling Analysis for Odd-Even Sort (comm)
 ![](./plots/Odd-Even/Odd-Even_weak_scaling_CUDA_comm_Sorted.png)
 ![](./plots/Odd-Even/Odd-Even_weak_scaling_MPI_comm_Sorted.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the comm region's average time taken to sort various input sizes of sorted input type for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, comm region execution time is relatively the same as threads increase.
+
+For MPI, comm region execution time increases for all input sizes as processors increase.
 
 #### Interpretation
+Communication for both CUDA and MPI does not parallelize well. For CUDA, it has hardly any effect on the overall time. For MPI, it is the limiting factor as it has the most significant effect on execution time of the program.
 
 ### Strong Scaling Speedup Analysis for Odd-Even Sort (main)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_CUDA_main_Sorted.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_MPI_main_Sorted.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the main region's speedup for sorting various input sizes of sorted input type for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, speedup increases as threads increase up until 2^8-2^9 threads or so, then it levels out.
+
+For MPI, speedup generally decreases as processors increase.
 
 #### Interpretation
+Parallelization seems to hurt MPI overall, while for CUDA it is beneficial up until threads of size 2^9.
 
 ### Strong Scaling Speedup  Analysis for Odd-Even Sort (comp_large)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_CUDA_comp_large_Sorted.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_MPI_comp_large_Sorted.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the comp_large region's speedup for sorting various input sizes of sorted input type for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, comp_large resembles main, speedup increases as threads increase up until 2^8-2^9 threads or so, then it levels out.
+
+For MPI, comp_large has significant increase in speedup from 2^6 to 2^10 processors.
 
 #### Interpretation
+Parallelization has a benefit for both computation regions of CUDA and MPI, but has a much more significant impact on MPI.
 
 ### Strong Scaling Speedup Analysis for Odd-Even Sort (comm)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_CUDA_comm_Sorted.png)
 ![](./plots/Odd-Even/Odd-Even_strong_scaling_speedup_MPI_comm_Sorted.png)
 #### Graph Overview
+These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the comm region's speedup for sorting various input sizes of sorted input type for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
+For CUDA, comm is sporadic but generally stays around the same speedup as threads increase.
+
+For MPI, speedup slows down as number of processors increase for all input sizes.
 
 #### Interpretation
+It is clear that communication is the limiting factor for MPI, due to the more occurences of MPI_Sendrecv as processors increase. For CUDA, communication does not have much of an impact.
 
 ## Algorithm Comparisons
 
@@ -366,30 +412,45 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 ![](plots/comparative_strong_scaling_65536_CUDA_main_Random.png)
 
 #### Graph Overview
+These graphs represent the MPI and CUDA implementations of all the algorithms and measure the main region's average execution time for sorting values of size 2^16 of a random input type.
 
 #### Trends
+Generally for all algorithms, besides merge sort, increasing the number of processors decreases execution time for MPI. With Odd-Even being the quickest at the lower processors and being the slowest at higher processors, and merge being the slowest at fewer processors, but the quickest at higher processors.
+
+Generally for all algorithms, execution time stays the same as number of threads increase. With Bitonic being the quickest, and Merge being the slowest.
 
 #### Interpretation
+Parallelization has the most benefit with merge sort in MPI and it hurts Odd-Even the most. For CUDA, there is not much of an effect of paralellizing.
 
 ### comm
 ![](plots/comparative_strong_scaling_65536_MPI_comm_Random.png)
 ![](plots/comparative_strong_scaling_65536_CUDA_comm_Random.png)
 
 #### Graph Overview
+These graphs represent the MPI and CUDA implementations of all the algorithms and measure the comm region's average execution time for sorting values of size 2^16 of a random input type.
 
 #### Trends
+For MPI, this resembles the main region, where increasing the number of processors decreases execution time for MPI. With Odd-Even being the quickest at the lower processors and being the slowest at higher processors. However, merge has moved to be in the middle between odd-even and the rest of the algorithms.
+
+For CUDA, comm is quite sporadic for all algorithms, with bitonic being the slowest and merge being the quickest. Merge stays the same as threads increase, odd-even decreases from 2^7 to 2^8 then stays the same, while the others jump around.
 
 #### Interpretation
+It is clear that MPI for all algorithms has a strong communication impact, however for merge it appears to not be the limiting factor like it is for the others. For CUDA, comm does not seem to be quite significant.
 
 ### comp_large
 ![](plots/comparative_strong_scaling_65536_MPI_comp_large_Random.png)
 ![](plots/comparative_strong_scaling_65536_CUDA_comp_large_Random.png)
 
 #### Graph Overview
+These graphs represent the MPI and CUDA implementations of all the algorithms and measure the comp_large region's average execution time for sorting values of size 2^16 of a random input type.
 
 #### Trends
+For all algorithms in MPI, generally execution time decreases as number of processors increases, with merge having the biggest decrease.
+
+For all algorithms in CUDA, generally execution time stays the same as number of threads increases.
 
 #### Interpretation
+This shows how computation benefits the most with MPI as increasing the number of processors improves computational parallelization. However with CUDA, it seems to have not much of an effect.
 
 ## Plots
 ![](plots/comparative_strong_scaling_65536_CUDA_main_Random.png)
