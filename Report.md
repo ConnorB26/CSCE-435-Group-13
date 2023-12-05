@@ -272,3 +272,30 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 #### Trends
 
 #### Interpretation
+
+### Strong Scaling Speedup Analysis for MergeSort (main)
+![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_main_Sorted.png)
+![](./plots/Merge/Merge_strong_scaling_speedup_MPI_main_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Strong Scaling Speedup  Analysis for MergeSort (comp_large)
+![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_comp_large_Sorted.png)
+![](./plots/Merge/Merge_strong_scaling_speedup_MPI_comp_large_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Strong Scaling Speedup  Analysis for MergeSort (comm)
+![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_comm_Sorted.png)
+![](./plots/Merge/Merge_strong_scaling_speedup_MPI_comm_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
