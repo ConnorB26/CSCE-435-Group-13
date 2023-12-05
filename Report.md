@@ -246,4 +246,29 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 
+### Weak Scaling Analysis for MergeSort (main)
+![](./plots/Merge/Merge_weak_scaling_CUDA_main_Sorted.png)
+![](./plots/Merge/Merge_weak_scaling_MPI_main_Sorted.png)
+#### Graph Overview
 
+#### Trends
+
+#### Interpretation
+
+### Weak Scaling Analysis for MergeSort (comp_large)
+![](./plots/Merge/Merge_weak_scaling_CUDA_comp_large_Sorted.png)
+![](./plots/Merge/Merge_weak_scaling_MPI_comp_large_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
+
+### Weak Scaling Analysis for MergeSort (comm)
+![](./plots/Merge/Merge_weak_scaling_CUDA_comm_Sorted.png)
+![](./plots/Merge/Merge_weak_scaling_MPI_comm_Sorted.png)
+#### Graph Overview
+
+#### Trends
+
+#### Interpretation
