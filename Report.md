@@ -314,8 +314,8 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 - For CUDA the trend means that we are seeing slight gains from paralellization, however once there is more than 2^8 processors we see very poor performance and increasing times. This is likely
-- due to increase in overhead in realation to performance gains. The MPI graph shows much better performance where we see massive gains in performance once there are 2^6 processors. The reason for
-- this odd shape is likely due to the run time being logarithmic. This means that the initial spike in a logarithmic complexity is likely eating up performance gains for lower amounts of processors.
+due to increase in overhead in realation to performance gains. The MPI graph shows much better performance where we see massive gains in performance once there are 2^6 processors. The reason for
+this odd shape is likely due to the run time being logarithmic. This means that the initial spike in a logarithmic complexity is likely eating up performance gains for lower amounts of processors.
 
 ### Strong Scaling Analysis for MergeSort (comp_large)
 ![](./plots/Merge/Merge_strong_scaling_CUDA_comp_large_65536.png)
@@ -340,7 +340,7 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 - The CUDA fluctuation seems to be an error with the runs that were timed for the cali files or is an abstracted sign of the inner workings of CUDA. The MPI graph shows comm times increasing which is due
-- to more processors that have to have data sent to them.
+to more processors that have to have data sent to them.
 
 ### Weak Scaling Analysis for MergeSort (main)
 ![](./plots/Merge/Merge_weak_scaling_CUDA_main_Sorted.png)
@@ -350,7 +350,7 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Trends
 - The CUDA graphs shows flat lines while the MPI graph shows the same trend with flat lines then sharp decrease. The Graphs all show expected results where there are equal spacing in runtime between each
-- input size.
+input size.
 
 #### Interpretation
 - The CUDA graph is flat due to poor parallelization. The MPI graph has the same trend as in the strong scaling section which is due to the same reason mentioned previously.
@@ -378,7 +378,7 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 - The CUDA graph is still flat due to poor parallelization. The MPI graph shows the same trend as in strong scaling which is due to increase in comm overhead with more processes. The notable change
-- is that the input sizes are grouped tighter together which means that increasing input size doesnt affect communications as strongly.
+is that the input sizes are grouped tighter together which means that increasing input size doesnt affect communications as strongly.
 
 ### Strong Scaling Speedup Analysis for MergeSort (main)
 ![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_main_Sorted.png)
@@ -392,7 +392,7 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 - The reason the CUDA graph looks like that is because of poor scaling and parallelization. The MPI graph shows the same trends as before with no increase in performance and then a sharp spike.
-- This remains due to the logarithmic core of the merge sort approach that has a sharp increase in runtime early on.
+This remains due to the logarithmic core of the merge sort approach that has a sharp increase in runtime early on.
 
 ### Strong Scaling Speedup  Analysis for MergeSort (comp_large)
 ![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_comp_large_Sorted.png)
@@ -406,8 +406,8 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 - The CUDA graph is nearly identical to the previous section. This is likely due to comp_large taking up the vast majority of runtime which makes it dominate the trends. The MPI shows the same
-- general trend with an even harsher increase. All the input sizes except 2^16 dont show a large increase however they likely will if more values for processes were tested. The reason for the sharp uptick is
-- due to how each process has a logarithmic run time so we are seeing the speedup from the flattening of the logarithmic curve.
+general trend with an even harsher increase. All the input sizes except 2^16 dont show a large increase however they likely will if more values for processes were tested. The reason for the sharp uptick is
+due to how each process has a logarithmic run time so we are seeing the speedup from the flattening of the logarithmic curve.
 
 ### Strong Scaling Speedup Analysis for MergeSort (comm)
 ![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_comm_Sorted.png)
@@ -421,7 +421,7 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 
 #### Interpretation
 - The reason for the MPIs trend is due to initial performance gains with communicating smaller arrays then shows a drop once the amount of arrays communicated in total overtakes the gain from
-- decreases in the size of each array. The CUDA graph is mostly flat with a small initial bump and various dips. The large speed up for input 2^20 is likely a symptom of how data is handled in CUDA.
+decreases in the size of each array. The CUDA graph is mostly flat with a small initial bump and various dips. The large speed up for input 2^20 is likely a symptom of how data is handled in CUDA.
 
 
 
