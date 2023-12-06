@@ -41,20 +41,20 @@ begin
 end BITONIC_SORT
 ```
 
-- For **Parallel Mergesort**:
+- For **Parallel sort**:
   - MPI: Data partitioning and merging will involve `MPI_Scatter` and `MPI_Gather`.
   - CUDA: Sorting within each partition will be handled by a CUDA kernel.
 
 ```
-procedure PARALLEL MERGE SORT(id, n, data, newdata)
+procedure PARALLEL  SORT(id, n, data, newdata)
 begin
-    data := sequentialmergesort(data)
+    data := sequentialsort(data)
     for dim := 1 to n do
         begin
-            data := parallelmerge(id, dim, data)
+            data := parallel(id, dim, data)
         end
     newdata := data
-end PARALLEL MERGE SORT
+end PARALLEL  SORT
 ```
 
 - For **Parallel Odd-Even Transposition Sort**:
@@ -306,82 +306,125 @@ Use this analysis to explore the Bitonic Sort algorithm's performance in both MP
 ![](./plots/Merge/Merge_strong_scaling_CUDA_main_65536.png)
 ![](./plots/Merge/Merge_strong_scaling_MPI_main_65536.png)
 #### Graph Overview
+- The graphs show strong scaling for main with input size 2^16. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- For the CUDA graph it shows a slight trend downwards and then an intense spike at the end
+- For MPI graph it shows a flat line until 2^6 processors when it drops quickly
 
 #### Interpretation
+- For CUDA the trend means that we are seeing slight gains from paralellization, however once there is more than 2^8 processors we see very poor performance and increasing times. This is likely
+- due to increase in overhead in realation to performance gains. The MPI graph shows much better performance where we see massive gains in performance once there are 2^6 processors. The reason for
+- this odd shape is likely due to the run time being logarithmic. This means that the initial spike in a logarithmic complexity is likely eating up performance gains for lower amounts of processors.
 
 ### Strong Scaling Analysis for MergeSort (comp_large)
 ![](./plots/Merge/Merge_strong_scaling_CUDA_comp_large_65536.png)
 ![](./plots/Merge/Merge_strong_scaling_MPI_comp_large_65536.png)
 #### Graph Overview
+- The graphs show strong scaling for comp_large with input size 2^16. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- The CUDA graph has the exact same trend as before with there being dips and then a massive spike in runtime at the end. The MPI graph also shows the same trend with a flat line the sharp decrease.
 
 #### Interpretation
+- As explained before the CUDA graph looks like this due to increase in overhead and the MPI graph looks like it does due to the logarithmic complexity spiking at the start and reducing performance gains.
 
 ### Strong Scaling Analysis for MergeSort (comm)
 ![](./plots/Merge/Merge_strong_scaling_CUDA_comm_65536.png)
 ![](./plots/Merge/Merge_strong_scaling_MPI_comm_65536.png)
 #### Graph Overview
+- The graphs show strong scaling for comm with input size 2^16. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- The CUDA graph on top shows massive fluctuations in comm time. The MPI graph shows a more expected graph with comm time increasing as processors are added
 
 #### Interpretation
+- The CUDA fluctuation seems to be an error with the runs that were timed for the cali files or is an abstracted sign of the inner workings of CUDA. The MPI graph shows comm times increasing which is due
+- to more processors that have to have data sent to them.
 
 ### Weak Scaling Analysis for MergeSort (main)
 ![](./plots/Merge/Merge_weak_scaling_CUDA_main_Sorted.png)
 ![](./plots/Merge/Merge_weak_scaling_MPI_main_Sorted.png)
 #### Graph Overview
+- The graphs show weak scaling for comm. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- The CUDA graphs shows flat lines while the MPI graph shows the same trend with flat lines then sharp decrease. The Graphs all show expected results where there are equal spacing in runtime between each
+- input size.
 
 #### Interpretation
+- The CUDA graph is flat due to poor parallelization. The MPI graph has the same trend as in the strong scaling section which is due to the same reason mentioned previously.
 
 ### Weak Scaling Analysis for MergeSort (comp_large)
 ![](./plots/Merge/Merge_weak_scaling_CUDA_comp_large_Sorted.png)
 ![](./plots/Merge/Merge_weak_scaling_MPI_comp_large_Sorted.png)
 #### Graph Overview
+- The graphs show weak scaling for comp_large. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- Same trends as before however for MPI the decrease after the flatline isn't as steep as in main
 
 #### Interpretation
+- The graphs look like this for the same reason in the previous section. The only difference is that the MPI graph is less steep meaning that it has less time gains than the previous section.
 
 ### Weak Scaling Analysis for MergeSort (comm)
 ![](./plots/Merge/Merge_weak_scaling_CUDA_comm_Sorted.png)
 ![](./plots/Merge/Merge_weak_scaling_MPI_comm_Sorted.png)
 #### Graph Overview
+- The graphs show weak scaling for comm. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- CUDA is still flat while MPI shows increase in runtime as processes are added.
 
 #### Interpretation
+- The CUDA graph is still flat due to poor parallelization. The MPI graph shows the same trend as in strong scaling which is due to increase in comm overhead with more processes. The notable change
+- is that the input sizes are grouped tighter together which means that increasing input size doesnt affect communications as strongly.
 
 ### Strong Scaling Speedup Analysis for MergeSort (main)
 ![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_main_Sorted.png)
 ![](./plots/Merge/Merge_strong_scaling_speedup_MPI_main_Sorted.png)
 #### Graph Overview
+- The graphs show strong scaling speedup for main with a sorted input. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- The CUDA graph shows large deviation that is flat and then drops off steeply.
+- The MPI graph shows an exponential gain in speedup.
 
 #### Interpretation
+- The reason the CUDA graph looks like that is because of poor scaling and parallelization. The MPI graph shows the same trends as before with no increase in performance and then a sharp spike.
+- This remains due to the logarithmic core of the merge sort approach that has a sharp increase in runtime early on.
 
 ### Strong Scaling Speedup  Analysis for MergeSort (comp_large)
 ![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_comp_large_Sorted.png)
 ![](./plots/Merge/Merge_strong_scaling_speedup_MPI_comp_large_Sorted.png)
 #### Graph Overview
+- The graphs show strong scaling speedup for comp_large with a sorted input. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- The CUDA graph shows the same trend as before.
+- The MPI graph shows an even steeper spike in speedup than the previous graph.
 
 #### Interpretation
+- The CUDA graph is nearly identical to the previous section. This is likely due to comp_large taking up the vast majority of runtime which makes it dominate the trends. The MPI shows the same
+- general trend with an even harsher increase. All the input sizes except 2^16 dont show a large increase however they likely will if more values for processes were tested. The reason for the sharp uptick is
+- due to how each process has a logarithmic run time so we are seeing the speedup from the flattening of the logarithmic curve.
 
 ### Strong Scaling Speedup Analysis for MergeSort (comm)
 ![](./plots/Merge/Merge_strong_scaling_speedup_CUDA_comm_Sorted.png)
 ![](./plots/Merge/Merge_strong_scaling_speedup_MPI_comm_Sorted.png)
 #### Graph Overview
+- The graphs show strong scaling speedup for comm with a sorted input. CUDA is on top and MPI on the bottom.
 
 #### Trends
+- The CUDA graph is mostly flat with 2^20 being an anomoly.
+- The MPI graph shows a spike in speedup then a drop.
 
 #### Interpretation
+- The reason for the MPIs trend is due to initial performance gains with communicating smaller arrays then shows a drop once the amount of arrays communicated in total overtakes the gain from
+- decreases in the size of each array. The CUDA graph is mostly flat with a small initial bump and various dips. The large speed up for input 2^20 is likely a symptom of how data is handled in CUDA.
+
+
+
 
 ## Performance Analysis of Parallel Odd-Even Transposition Sort
 
