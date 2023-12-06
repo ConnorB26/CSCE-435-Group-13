@@ -1,0 +1,3 @@
+/home/chrisanand/please/mpi/CMakeFiles/rebuild_cache.dir
+/home/chrisanand/please/mpi/CMakeFiles/edit_cache.dir
+/home/chrisanand/please/mpi/CMakeFiles/bitonic.dir

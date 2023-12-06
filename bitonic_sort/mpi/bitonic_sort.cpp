@@ -1,3 +1,5 @@
+// https://github.com/jschueths/MPI-Bitonic-Sort/blob/master/bitonic.cpp
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -7,6 +9,14 @@
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
 #include <adiak.hpp>
+
+void print_vector(const std::vector<int>& vec, const std::string& label) {
+    std::cout << label << ": ";
+    for (const auto& elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+}
 
 // Function to generate sorted data
 std::vector<int> generate_sorted_data(size_t size)
@@ -70,6 +80,7 @@ bool is_correct(const std::vector<int> &data)
     {
         if (data[i - 1] > data[i])
         {
+            //std::cout << i << std::endl;
             return false;
         }
     }
@@ -101,9 +112,9 @@ void bitonic_merge(std::vector<int> &local_data, int step, int rank)
     CALI_MARK_BEGIN("comp_large");
     bool ascending = ((rank & step) == 0);
     
-    if (rank == 1) {
-        std::cout << "Step " << step << ": Ascending Order: " << ascending << std::endl;
-    }
+    // if (rank == 1) {
+    //     std::cout << "Step " << step << ": Ascending Order: " << ascending << std::endl;
+    // }
 
     // Merge local data and partner data
     std::vector<int> merged_data;
@@ -142,13 +153,14 @@ void bitonic_merge(std::vector<int> &local_data, int step, int rank)
     }
 
     // Choose the appropriate half of the merged data
+    // Choose the appropriate half of the merged data
     if (ascending)
     {
-        local_data.assign(merged_data.begin(), merged_data.begin() + local_size);
+        std::copy(merged_data.begin(), merged_data.begin() + local_size, local_data.begin());
     }
     else
     {
-        local_data.assign(merged_data.end() - local_size, merged_data.end());
+        std::copy(merged_data.end() - local_size, merged_data.end(), local_data.begin());
     }
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
@@ -159,7 +171,15 @@ void bitonic_sort(std::vector<int> &local_data, int rank, int num_procs)
     // First, sort locally
     CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("comp_large");
+    if(rank == 0){
+        // print_vector(local_data, "Before Local Sorting");
+    }
+    
     std::sort(local_data.begin(), local_data.end());
+    
+    if(rank == 0){
+        // print_vector(local_data, "After Local Sorting");
+    }
     CALI_MARK_END("comp_large");
     CALI_MARK_END("comp");
 
@@ -225,7 +245,7 @@ int main(int argc, char **argv)
     std::string datatype = "int";
     size_t sizeOfDatatype = sizeof(int);
     int groupNumber = 13;
-    std::string implementationSource = "AI";
+    std::string implementationSource = "Online";
 
     adiak::value("Algorithm", algorithm);
     adiak::value("ProgrammingModel", programmingModel);
@@ -306,11 +326,12 @@ int main(int argc, char **argv)
 
     if (rank == 0)
     {
+        //print_vector(gathered_data, "End");
         CALI_MARK_BEGIN("correctness_check");
         bool correct = is_correct(gathered_data);
         if (!correct)
         {
-            // std::cerr << "Error: The algorithm did not sort the data correctly." << std::endl;
+            std::cerr << "Error: The algorithm did not sort the data correctly." << std::endl;
         }
         CALI_MARK_END("correctness_check");
     }

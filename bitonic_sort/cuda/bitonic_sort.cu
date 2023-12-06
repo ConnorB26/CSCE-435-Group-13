@@ -237,7 +237,7 @@ int main(int argc, char **argv)
     std::string datatype = "int";
     size_t sizeOfDatatype = sizeof(int);
     int group_number = 13;
-    std::string implementation_source = "AI";
+    std::string implementation_source = "Online";
 
     adiak::value("Algorithm", algorithm);
     adiak::value("ProgrammingModel", programmingModel);
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
     bool correct = is_correct(data);
     if (!correct)
     {
-        std::cerr << "Error: The algorithm did not sort the data correctly." << std::endl;
+       std::cerr << "Error: The algorithm did not sort the data correctly." << std::endl;
     }
     CALI_MARK_END("correctness_check");
 
