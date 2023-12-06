@@ -248,57 +248,126 @@ Similarly, as before for the MPI implementation, the communication actually gets
 
 ## Performance Analysis of Parallel Bitonic Sort
 
-### Strong Scaling Analysis for Bitonic Sort with CUDA
-![](./bitonic_sort/Bitonic%20Sort%20Strong%20Scaling%20CUDA.png)
+### Strong Scaling Analysis for Bitonic Sort (main)
+![](./plots/Bitonic/Bitonic_strong_scaling_CUDA_main_262144.png)
+![](./plots/Bitonic/Bitonic_strong_scaling_MPI_main_262144.png)
 #### Graph Overview
-- The graph represents the average execution time for sorting a random input of size 65536 as the number of threads increases.
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the main region's average time taken to sort 2^18 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processes (MPI).
 
 #### Trends
-- Initial decrease in execution time as the number of threads increases from 75 to about 150.
-- Beyond 150 threads, the execution time starts to increase.
+- For the CUDA implmentation, the graph shows a downward trend. The input types decrease in execution time as the number of threads increase.
+- For the MPI implmentation, the graph shows an upward trend. The input types increase in execution time as the number of processes increase.
 
 #### Interpretation
-- The decrease suggests that additional threads initially lead to better parallelization.
-- The subsequent increase may be due to overhead or hardware limitations such as memory bandwidth or thread synchronization issues.
+- For CUDA this shows that the sorting algorithm can take advantage of the increase in parallelism available.
+- For MPI this shows that while the sorting algorithm can take advantage of the increase in parallelism overall, with all the other sequential processes that need to be done that, the overall time increased.
 
-### Strong Scaling Analysis for Bitonic Sort with MPI
-![](./bitonic_sort/Bitonic%20Sort%20Strong%20Scaling%20MPI.png)
+### Strong Scaling Analysis for Bitonic Sort (comp_large)
+![](./plots/Bitonic/Bitonic_strong_scaling_CUDA_comp_large_262144.png)
+![](./plots/Bitonic/Bitonic_strong_scaling_MPI_comp_large_262144.png)
 #### Graph Overview
-- Displays the average execution time for sorting a random input of size 65536 with an increasing number of processors.
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the comp_large region's average time taken to sort 2^18 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processes (MPI).
 
 #### Trends
-- Significant reduction in execution time with an increase in processors up to 200.
-- Slow increase in execution time with more processors beyond this point.
+- For the both implmentations, the graph shows a downward trend. The input types decrease in execution time as the number of threads/processes increase.
 
 #### Interpretation
-- Sharp decrease followed by a gradual increase suggests that there is an optimal number of processors for parallelization, beyond which overhead costs reduce efficiency.
+- This shows when it came down to just the computational part of both algorithms they can take full advantage of the increased parallelism, due to the algorithm splitting the dataset into smaller problem sizes.
 
-### Weak Scaling Analysis for Bitonic Sort with CUDA
-![](./bitonic_sort/Bitonic%20Sort%20Weak%20Scaling%20CUDA.png)
+### Strong Scaling Analysis for Bitonic Sort (comm)
+![](./plots/Bitonic/Bitonic_strong_scaling_CUDA_comm_262144.png)
+![](./plots/Bitonic/Bitonic_strong_scaling_MPI_comm_262144.png)
 #### Graph Overview
-- Shows execution time while increasing the number of threads in a block and the problem size proportionally.
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the comm region's average time taken to sort 2^18 values of various input types (1% Pertubed, Sorted, Reverse Sorted, Random) for an increasing number of threads (CUDA) or processes (MPI).
 
 #### Trends
-- Execution times remain flat across the range of threads for different problem sizes.
+- For the CUDA implmentation, the graph shows a downward trend until the end. The input types decrease in execution time as the number of threads increase. There is also an outlier with the Sorted input type at 2^8 threads
+- For the MPI implmentation, the graph shows an upward trend. The input types increase in execution time as the number of processes increase.
 
 #### Interpretation
-- The stable execution times regardless of the increased problem size indicate good weak scaling, with the algorithm effectively handling larger datasets with more threads.
+- For CUDA this shows that the sorting algorithm does take advantage of the parallelism until after 2^9 threads due to the overhead of creating more virtual threads the communication takes longer.
+- For MPI this shows that communication is taking the longest time since as the number of processes increase so the does the amount of communication and due to some inefficencies in the code it takes longer than expected.
 
-### Weak Scaling Analysis for Bitonic Sort with MPI
-![](./bitonic_sort/Bitonic%20Sort%20Weak%20Scaling%20MPI.png)
+### Weak Scaling Analysis for Bitonic Sort (main)
+![](./plots/Bitonic/Bitonic_weak_scaling_CUDA_main_Reverse_Sorted.png)
+![](./plots/Bitonic/Bitonic_weak_scaling_MPI_main_Reverse_Sorted.png)
 #### Graph Overview
-- Indicates execution time as both the problem size (1 million elements per processor) and the number of processors increase.
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the main region's average time taken to sort various input sizes of the reversed sorted input type for an increasing number of threads (CUDA) or processes (MPI).
 
 #### Trends
-- Gradual increase in execution time as more processors are added.
+- For the CUDA implementation, all of the different input sizes decrease in time as the number of threads increase. Except for the smallest input size.
+- For the MPI implementation, there is an upward trend, where all of the different input sizes increase in time as the number of threads increase. Except for the smallest input size where it shows a spike at 2^4 processes.
 
 #### Interpretation
-- The algorithm's parallel efficiency seems to decrease with scaling, likely due to communication costs or load imbalances at larger scales.
+- For CUDA, this decrease shows that the algorithm is taking better advantage of the parallisim than expected. Except for the smallest input size due to the overhead of creating the extra threads it does increase.
+- For MPI, this increase implies that it can not take full advantage of the parallelisim; however, this could be due to the sequential costs associated with larger datasets as we will explore further in the report.
 
-Use this analysis to explore the Bitonic Sort algorithm's performance in both MPI and CUDA implementations, discussing potential reasons for the observed trends and considering improvements for efficiency.
+### Weak Scaling Analysis for Bitonic Sort (comp_large)
+![](./plots/Bitonic/Bitonic_weak_scaling_CUDA_comp_large_Reverse_Sorted.png)
+![](./plots/Bitonic/Bitonic_weak_scaling_MPI_comp_large_Reverse_Sorted.png)
+#### Graph Overview
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the comp_large region's average time taken to sort various input sizes of the reversed sorted input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+- For both implementations the overal trend decreases except for the smallest input size for CUDA.
+
+#### Interpretation
+- For both this shows that the increased parallelisim greatly benifits both types of algorithms except for the increased overhead of creating virtual threads for the smallest input size in CUDA.
+
+### Weak Scaling Analysis for Bitonic Sort (comm)
+![](./plots/Bitonic/Bitonic_weak_scaling_CUDA_comm_Reverse_Sorted.png)
+![](./plots/Bitonic/Bitonic_weak_scaling_MPI_comm_Reverse_Sorted.png)
+#### Graph Overview
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the comm region's average time taken to sort various input sizes of the reversed sorted input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+- For CUDA the trend lines stay horizontal.
+- For MPI the graphs show an upward trend with the smaller input sizes showing a greater upward trend.
+
+#### Interpretation
+- For CUDA this shows that the communication part of the algorithm does not benifit from the increase parallelism unlike the comp_large section.
+- For MPI this shows that with an increase in processes the communication takes longer this is due to the overhead of the communication done in MPI. Further proof of this is how the smaller input sizes sharply increase in execution time compared to the other input sizes. This shows that the overhead is impacts the smaller sizes over the larger sizes due to the larger sizes having to communicate more either way. This shows how there was a bottleneck in performance due to the overhead caused by communication.  
 
 
+### Strong Scaling Speedup Analysis for Bitonic Sort (main)
+![](./plots/Bitonic/Bitonic_strong_scaling_speedup_CUDA_main_Reverse_Sorted.png)
+![](./plots/Bitonic/Bitonic_strong_scaling_speedup_MPI_main_Reverse_Sorted.png)
+#### Graph Overview
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the main region's speedup to sort various input sizes of the reversed sorted input type for an increasing number of threads (CUDA) or processes (MPI).
 
+#### Trends
+- For the CUDA implementation, all of the different input sizes increase in speedup as the number of threads is also increased. Except for the last data point of number of threads.
+- For the MPI implementation, there is a downward trend after a small upward trend in the beginning.
+
+#### Interpretation
+- For CUDA, this increase shows that the algorithm is an efficent algorithm. However, at the last increase of threads it shows the overhead of creating the extra threads caused the algorithm to not speedup as much as it did before.
+- For MPI, this decrease implies the sequential costs of the algorithms such as checking the array and also the inefficent communication led the algorithm not speeding up as expected.
+
+### Strong Scaling Speedup Analysis for Bitonic Sort (comp_large)
+![](./plots/Bitonic/Bitonic_strong_scaling_speedup_CUDA_comp_large_Reverse_Sorted.png)
+![](./plots/Bitonic/Bitonic_strong_scaling_speedup_MPI_comp_large_Reverse_Sorted.png)
+#### Graph Overview
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the comp_large region's speedup to sort various input sizes of the reversed sorted input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+- For both implementations the overal trend decreases except for the last thread increase in CUDA. Additionally, for MPI the trend exponentially increased.
+
+#### Interpretation
+- For both this shows that the increased parallelisim is benefical for both. CUDA showed an incread of 3.5x as expected. However, MPI showed exponential growth showing an incread of almost 30x speedup showing how MPI could be better at computational tasks compared to CUDA.
+
+### Strong Scaling Speedup Analysis for Bitonic Sort (comm)
+![](./plots/Bitonic/Bitonic_strong_scaling_speedup_CUDA_comm_Reverse_Sorted.png)
+![](./plots/Bitonic/Bitonic_strong_scaling_speedup_MPI_comm_Reverse_Sorted.png)
+#### Graph Overview
+- These graphs represent the MPI and CUDA implementation for Bitonic Sort and the measure the comm region's speedup to sort various input sizes of the reversed sorted input type for an increasing number of threads (CUDA) or processes (MPI).
+
+#### Trends
+- For CUDA the trend intially showed an upwards trend; however, with an increase in threads the trend changed to a downwards trend.
+- For MPI the graphs stayed mostly flat except for a spike with the smallest input size.
+
+#### Interpretation
+- For CUDA this shows that the communication part speedup with an increase in threads up to a certain point where the overhead was actually decreased the speedup.
+- For MPI this shows that with an increase in processes the does not benifit the communication nearly as much especially as the trend was slightly downwards. This is due to the fact that the larger messages and overhead counteracted the increase in performance provided by number of processes. This also shows the main graph downward trend was mainly due to the inclusion of sequential parts of the algorithm. 
 
 ## Performance Analysis of Parallel Merge Sort
 
@@ -448,7 +517,7 @@ Evidently, CUDA is not parallelizing well. For MPI, for this input type, there i
 These graphs represent the MPI and CUDA implementation for Odd-Even Sort and the measure the comp_large region's average time taken to sort various input sizes of sorted input type for an increasing number of threads (CUDA) or processors (MPI).
 
 #### Trends
-For Cuda, comp_large is similar to main here.
+For CUDA, comp_large is similar to main here.
 
 For MPI, comp_large generally decreases as number of processors increases.
 
